@@ -10,13 +10,20 @@ from .gemini_integration import analyze_image_with_gemini
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 
+from django.shortcuts import render
+from django.http import JsonResponse
+from .authorization import get_token
+from .features.music_recognition import identify_and_search
+
+
 from django.conf import settings
 from django.contrib import messages
 from urllib.parse import urlencode
 import base64
 import requests
 
-
+# Read song details from the recognition result
+from .features.music_recognition import identify_and_search
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
@@ -346,3 +353,118 @@ def analyze_image_view(request):
                 print(f"Number of tracks per page: {len(context['tracks'])}")
 
     return render(request, 'image_analysis.html', context)
+
+
+# Recommendation View
+
+
+
+# spotify_app/views.py
+
+from django.http import JsonResponse
+from django.shortcuts import render
+import json
+from .features.recommendation import recommend_songs  # 确保导入路径正确
+
+def recommendation_view(request):
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            favorite_tracks = data.get("favorite_tracks", [])
+
+
+            if not favorite_tracks:
+                return JsonResponse({"success": False, "error": "No tracks provided."})
+
+
+            user_favorites = []
+            for track in favorite_tracks:
+                try:
+                    song_name, artist_name = track.split("|")
+                    user_favorites.append({"name": song_name.strip(), "artist": artist_name.strip()})
+                except ValueError:
+                    return JsonResponse({"success": False, "error": "Invalid format. Use 'Song Name|Artist Name'."})
+
+            recommendations = recommend_songs(user_favorites, limit=5)
+
+
+            return JsonResponse({"success": True, "recommendations": recommendations}, safe=False)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "error": "Invalid JSON input."})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return render(request, "recommendation.html")
+
+# Audio Recognition View
+def audio_recognition_view(request):
+    if request.method == "POST":
+        audio_file = request.FILES.get("audio_file")
+        if not audio_file:
+            return JsonResponse({"error": "No audio file uploaded"})
+
+        temp_file_path = f"/tmp/{audio_file.name}"
+        try:
+            with open(temp_file_path, "wb") as temp_file:
+                for chunk in audio_file.chunks():
+                    temp_file.write(chunk)
+
+            result = identify_and_search(temp_file_path)
+            
+            # Store the result in session for the recognition page to access
+            request.session['recognition_result'] = result
+            
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            print(f"Error during recognition: {str(e)}")
+            return JsonResponse({"error": f"An internal error occurred: {str(e)}"})
+
+        finally:
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+
+    return JsonResponse({"error": "Invalid request method"})
+
+def song_recognition_view(request):
+    """
+    Display the song recognition results
+    """
+    # Get the result from session
+    recognition_result = request.session.get('recognition_result')
+    
+    # Clear the session data after retrieving it
+    if 'recognition_result' in request.session:
+        del request.session['recognition_result']
+    
+    context = {
+        'recognition_result': recognition_result
+    }
+     # Debug print to verify data
+    print("Recognition Result:", recognition_result)
+    return render(request, 'song_recognition.html', context)
+
+#top chart
+from django.views.decorators.csrf import csrf_exempt
+from .features.topChart import fetch_top_tracks_with_spotify_details
+import json
+from django.http import JsonResponse
+
+@csrf_exempt
+def top_charts_view(request):
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            country = data.get("country", "").strip()
+            if not country:
+                return JsonResponse({"success": False, "error": "Country is required."})
+            
+            tracks = fetch_top_tracks_with_spotify_details(country)
+            return JsonResponse({"success": True, "recommendations": tracks}, safe=False)
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return render(request, "topChart.html")
