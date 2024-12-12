@@ -1,0 +1,118 @@
+<!-- Extends the base template 'base.html'. This allows the main page to inherit the structure and layout defined in the base template. -->
+{% extends 'base.html' %}
+<!-- Loads the static template tag to handle static files. -->
+{% load static %}
+<!-- Defines the title block. This sets the title of the page to "Home - Group Music App". -->
+{% block title %}Home - EZII Music App{% endblock %}
+
+<!-- Defines the content block. This is where the main content of the page will go. -->
+{% block content %}
+    <!-- Main Container -->
+    <div class="dark min-h-full">
+        <!-- Checks if the access token is not present. If not, displays the login button. -->
+        {% if not access_token %}
+            <div class="flex justify-center py-4">
+                <a href="{% url 'authorize' %}" class="inline-flex items-center px-6 py-3 text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+                    <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                    </svg>
+                    Login with Spotify
+                </a>
+            </div>
+        {% endif %}
+
+        <!-- Default Landing Page Content -->
+         <!-- Checks if the default landing page content should be displayed. -->
+        {% if default_landing %}
+            <div class="py-24 sm:py-26">
+                <div class="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
+                    <!-- Displays the username if it exists in the session. -->
+                    <h2 class="text-3xl font-semibold text-indigo-600">
+                        Hello {% if request.session.username %}{{ request.session.username }}{% else %}{% endif %}
+                    </h2>
+                    <p class="mt-2 max-w-lg text-pretty text-xl font-semibold tracking-tight text-gray-950 sm:text-5xl">Today, Your Music is...</p>
+                    <div class="mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2">
+                        <!-- Top Chart Section -->
+                        <div class="relative lg:col-span-3">
+                            <div class="absolute inset-px rounded-lg bg-white max-lg:rounded-t-[2rem] lg:rounded-tl-[2rem]"></div>
+                            <div class="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] max-lg:rounded-t-[calc(2rem+1px)] lg:rounded-tl-[calc(2rem+1px)]">
+                                <video class="h-80 object-cover object-center" autoplay muted loop>
+                                    <source src="{% static 'videos/v1.mp4' %}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                                <div class="p-10 pt-4">
+                                    <p class="mt-2 text-lg font-medium tracking-tight text-gray-950">Top Chart</p>
+                                    <p class="mt-2 max-w-lg text-sm/6 text-gray-600">View Our Global Top Chart</p>
+                                    <a href="{% url 'top_charts_view' %}">
+                                        <button class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-150">
+                                            Explore Top Charts
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 max-lg:rounded-t-[2rem] lg:rounded-tl-[2rem]"></div>
+                        </div>
+
+                        <!-- Recommendations Section -->
+                        <div class="relative lg:col-span-3">
+                            <div class="absolute inset-px rounded-lg bg-white lg:rounded-tr-[2rem]"></div>
+                            <div class="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] lg:rounded-tr-[calc(2rem+1px)]">
+                                <img class="h-80 object-cover object-left lg:object-right" src="{% static 'images/main_1.png' %}" alt="Main Image1">
+                                <div class="p-10 pt-4">
+                                    <p class="mt-2 text-lg font-medium tracking-tight text-gray-950">Recommendations</p>
+                                    <p class="mt-2 max-w-lg text-sm/6 text-gray-600">Find Songs You Might Like!</p>
+                                    <a href="{% url 'recommendation_view' %}">
+                                        <button class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-150">
+                                            Explore Recommendations
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 lg:rounded-tr-[2rem]"></div>
+                        </div>
+
+                        <!-- Liked Music Section -->
+                        <div class="relative lg:col-span-3">
+                            <div class="absolute inset-px rounded-lg bg-white lg:rounded-bl-[2rem]"></div>
+                            <div class="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] lg:rounded-bl-[calc(2rem+1px)] hover:shadow-lg transition-shadow duration-300">
+                                <img class="h-80 object-cover object-left lg:object-right" src="{% static 'images/main_3.png' %}" alt="Main Image2">
+                                <div class="p-10 pt-4">
+                                    <p class="mt-2 text-lg font-medium tracking-tight text-gray-950">Liked Music</p>
+                                    <p class="mt-2 max-w-lg text-sm/6 text-gray-600">Explore Songs You Added to Your Liked List.</p>
+                                    <!-- Add a button or link to navigate to the recommendations page -->
+                                    <a href="{% url 'firebase_auth:liked_songs' %}">
+                                        <button class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-150">
+                                            Your Liked List Here
+                                        </button>
+                                    </a>
+                                    </div>
+                                </div>
+                            <div class="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 lg:rounded-bl-[2rem]"></div>
+                        </div>
+
+                        
+
+                        <!-- Picked For You Section -->
+                        <div class="relative lg:col-span-3">
+                            <div class="absolute inset-px rounded-lg bg-white max-lg:rounded-b-[2rem] lg:rounded-br-[2rem]"></div>
+                            <div class="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] max-lg:rounded-b-[calc(2rem+1px)] lg:rounded-br-[calc(2rem+1px)]">
+                                <img class="h-80 object-cover object-left lg:object-right" src="{% static 'images/main_4.png' %}" alt="Main Image4">
+                                <div class="p-10 pt-4">
+                                    <p class="mt-2 text-lg font-medium tracking-tight text-gray-950">Picked For You</p>
+                                    <p class="mt-2 max-w-lg text-sm/6 text-gray-600">Based On Your Favorite Songs, Enjoy Our Recommendations!</p>
+                                    <!-- Add a button or link to navigate to the recommendations page -->
+                                    <a href="{% url 'firebase_auth:pick_it_for_you' %}">
+                                        <button class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-150">
+                                            Explore Picked Songs For You
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 max-lg:rounded-b-[2rem] lg:rounded-br-[2rem]"></div>
+                        </div>
+        {% endif %}
+
+        <!-- Include the Search Results Template -->
+        {% include 'search.html' %}
+    </div>
+{% endblock %}
