@@ -252,7 +252,7 @@ def fetch_similar_songs_lastfm(track_name, artist_name):
     Fetch similar songs using the Last.fm API and enrich with Spotify embed URLs.
     """
     try:
-        API_KEY = "a53a38c3f6cb64b7daadf34cc14c5796"
+        API_KEY = os.getenv('lastfm_KEY')
         endpoint = "http://ws.audioscrobbler.com/2.0/"
         params = {
             "method": "track.getSimilar",
